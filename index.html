@@ -80,22 +80,75 @@
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
 
-        .scale ul {
+        .accordion {
             list-style-type: none;
             padding: 0;
         }
 
-        .scale li {
+        .accordion-item {
             margin-bottom: 10px;
-            padding: 10px;
             border-radius: 5px;
-            transition: all 0.3s ease;
-            cursor: pointer;
+            overflow: hidden;
         }
 
-        .scale li:hover {
-            background-color: rgba(0, 0, 0, 0.05);
-            transform: translateX(5px);
+        .accordion-header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 10px;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.3s ease;
+            position: relative;
+        }
+
+        .accordion-header:hover {
+            background-color: #3a7bc2;
+        }
+
+        .accordion-header.active {
+            background-color: #3a7bc2;
+        }
+
+        .accordion-header::after {
+            content: '+';
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            transition: transform 0.3s ease;
+        }
+
+        .accordion-header.active::after {
+            transform: translateY(-50%) rotate(45deg);
+        }
+
+        .accordion-content {
+            background-color: var(--surface-color);
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease, padding 0.5s ease;
+        }
+
+        .accordion-content.active {
+            max-height: 1000px;
+            padding: 10px;
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.05);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        .accordion-header:hover {
+            animation: pulse 1s infinite;
         }
 
         .visualization {
@@ -121,7 +174,7 @@
         }
 
         .funnel:hover {
-            transform: scale(1.05);
+            transform: scale(1.03);
         }
 
         .funnel-section {
@@ -129,15 +182,11 @@
             width: 100%;
             left: 0;
             cursor: pointer;
+            transition: transform 0.3s ease;
         }
 
-        .info-box {
-            margin-top: 20px;
-            padding: 20px;
-            border-radius: 10px;
-            background-color: var(--surface-color);
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            transition: all 0.3s ease;
+        .funnel-section:hover {
+            transform: translateX(10px);
         }
 
         footer {
@@ -189,18 +238,12 @@
         <div class="content">
             <div class="scale">
                 <h2>Consciousness Levels</h2>
-                <ul id="scaleList"></ul>
+                <ul id="scaleList" class="accordion"></ul>
             </div>
             <div class="visualization">
                 <h2>Consciousness Funnel</h2>
                 <div id="funnel" class="funnel"></div>
             </div>
-        </div>
-
-        <div id="infoBox" class="info-box">
-            <h2>Explore the Levels of Consciousness</h2>
-            <p>Interact with the scale or funnel to learn more about each state of consciousness and discover practical
-                tips for personal growth.</p>
         </div>
 
         <section class="intro">
@@ -255,30 +298,34 @@
         ];
 
         const scaleList = document.getElementById('scaleList');
-        const funnel = document.getElementById('funnel');
-        const infoBox = document.getElementById('infoBox');
+                const funnel = document.getElementById('funnel');
 
         levels.forEach((level, index) => {
             const li = document.createElement('li');
-            li.textContent = `${level.value} - ${level.name}`;
-            li.addEventListener('mouseenter', () => showInfo(level));
+            li.classList.add('accordion-item');
+            li.innerHTML = `
+                <div class="accordion-header">${level.value} - ${level.name}</div>
+                <div class="accordion-content">
+                    <p><strong>Description:</strong> ${level.description}</p>
+                    <p><strong>Suggestion to improve:</strong> ${level.suggestion}</p>
+                </div>
+            `;
             scaleList.appendChild(li);
 
             const section = document.createElement('div');
             section.classList.add('funnel-section');
             section.style.height = `${100 / levels.length}%`;
             section.style.top = `${(index * 100) / levels.length}%`;
-            section.addEventListener('mouseenter', () => showInfo(level));
             funnel.appendChild(section);
         });
 
-        function showInfo(level) {
-            infoBox.innerHTML = `
-                    <h2>${level.name} (${level.value})</h2>
-                    <p><strong>Description:</strong> ${level.description}</p>
-                    <p><strong>Suggestion to improve:</strong> ${level.suggestion}</p>
-                `;
-        }
+                scaleList.addEventListener('click', (e) => {
+                    if (e.target.classList.contains('accordion-header')) {
+                        e.target.classList.toggle('active');
+                        const content = e.target.nextElementSibling;
+                        content.classList.toggle('active');
+                    }
+            });
     </script>
 </body>
 
